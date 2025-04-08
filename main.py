@@ -9,13 +9,14 @@ STICKER_SIZE = 512
 TRAY_IMAGE_FORMAT = 'png'
 STICKER_IMAGE_FORMAT = 'webp'
 INPUT_DIR = Path('input_dir')
-OUTPUT_DIR = Path('output')
+TEMP_OUTPUT_DIR = Path('output')
+PACKS_DIR = Path('packs')
 
 
 def is_image(file_path):
     try:
         with Image.open(file_path) as img:
-            img.verify()  # Verifies if the image can be opened
+            img.verify()
         return True
     except (IOError, SyntaxError):
         return False
@@ -51,12 +52,12 @@ def resize_image(image_input_path, image_output_path, new_width, new_height, fil
 
 
 def reformat_stickers():
-    Path.mkdir(OUTPUT_DIR, exist_ok=True)
+    Path.mkdir(TEMP_OUTPUT_DIR, exist_ok=True)
     for i, item in enumerate(INPUT_DIR.iterdir()):
         if not is_image(item):
             continue
         # TODO if name == tray.png add as tray and also as the sticker if flag
-        new_name = OUTPUT_DIR / f'sticker_{i}.{STICKER_IMAGE_FORMAT}'
+        new_name = TEMP_OUTPUT_DIR / f'sticker_{i}.{STICKER_IMAGE_FORMAT}'
         resize_image(item, new_name, STICKER_SIZE, STICKER_SIZE, STICKER_IMAGE_FORMAT)
         print(new_name)
         if i == 30:
@@ -65,17 +66,18 @@ def reformat_stickers():
 
 
 def zip_and_format_pack(pack_name: str = None):
-    zip_file_path = Path(f'{pack_name}.zip')
+    Path.mkdir(PACKS_DIR, exist_ok=True)
+    zip_file_path = PACKS_DIR / f'{pack_name}.zip'
     with ZipFile(zip_file_path, 'w') as zip_file:
-        for file in OUTPUT_DIR.iterdir():
+        for file in TEMP_OUTPUT_DIR.iterdir():
             file_path = Path(file)
             zip_file.write(file_path, file_path.name)
 
     wastickers_file_type = zip_file_path.with_suffix('.wastickers')
     zip_file_path.rename(wastickers_file_type)
     print('Done! your sticker pack is at', zip_file_path)
-    # delete output dir, we only need the pack
-    # rmdir(OUTPUT_DIR)
+
+    # rmdir(OUTPUT_DIR) # TODO delete output dir, we only need the pack
 
 
 def make_sticker_pack():
