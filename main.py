@@ -1,4 +1,6 @@
 from os import rmdir
+from typing import Optional
+
 from PIL import Image
 from pathlib import Path
 from zipfile import ZipFile
@@ -12,13 +14,15 @@ INPUT_DIR = Path('input_dir')
 TEMP_OUTPUT_DIR = Path('output')
 PACKS_DIR = Path('packs')
 
+ADD_TRAY_TO_PACK = True
+
 
 def is_image(file_path):
     try:
         with Image.open(file_path) as img:
             img.verify()
         return True
-    except (IOError, SyntaxError):
+    except (AttributeError, FileNotFoundError, OSError, SyntaxError):
         return False
 
 
@@ -38,25 +42,32 @@ def verify_title_and_author() -> str:
     return title
 
 
-def check_for_tray_image():
-    tray_image_path = INPUT_DIR / 'tray.png'  # TODO more file types support
-    if not tray_image_path.exists():
-        print(f'{tray_image_path.name} not found, using an image from the pack')
-        # TODO: continue
+def check_for_tray_image() -> Optional[Path]:
+    Path.mkdir(TEMP_OUTPUT_DIR, exist_ok=True)
+    result = tray_image_path = next(INPUT_DIR.rglob('tray.*'), None)
+    if tray_image_path is None or not is_image(tray_image_path):
+        print(f'tray image not found, using an image from the pack')
+        for item in INPUT_DIR.iterdir():
+            if is_image(item):
+                tray_image_path = item
+
+    new_name = TEMP_OUTPUT_DIR / f'tray.{TRAY_IMAGE_FORMAT}'
+    resize_image(tray_image_path, new_name, TRAY_SIZE, TRAY_SIZE, TRAY_IMAGE_FORMAT)
+    return result
 
 
-def resize_image(image_input_path, image_output_path, new_width, new_height, file_format):
+def resize_image(image_input_path: Path, image_output_path: Path, new_width: int, new_height: int, file_format: str):
     with Image.open(image_input_path) as img:
         img = img.resize((new_width, new_height), Image.LANCZOS)
         img.save(image_output_path, file_format)
 
 
-def reformat_stickers():
-    Path.mkdir(TEMP_OUTPUT_DIR, exist_ok=True)
+def reformat_stickers(tray_path):
     for i, item in enumerate(INPUT_DIR.iterdir()):
         if not is_image(item):
             continue
-        # TODO if name == tray.png add as tray and also as the sticker if flag
+        if item == tray_path and not ADD_TRAY_TO_PACK:
+            continue
         new_name = TEMP_OUTPUT_DIR / f'sticker_{i}.{STICKER_IMAGE_FORMAT}'
         resize_image(item, new_name, STICKER_SIZE, STICKER_SIZE, STICKER_IMAGE_FORMAT)
         print(new_name)
@@ -83,8 +94,8 @@ def zip_and_format_pack(pack_name: str = None):
 def make_sticker_pack():
     Path.mkdir(INPUT_DIR, exist_ok=True)
     pack_title = verify_title_and_author()
-    check_for_tray_image()
-    reformat_stickers()
+    tray_path = check_for_tray_image()
+    reformat_stickers(tray_path)
     zip_and_format_pack(pack_title)
 
 
