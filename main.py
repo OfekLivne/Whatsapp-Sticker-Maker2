@@ -25,8 +25,8 @@ def is_image(file_path):
 def handle_txt_file(txt_file_path: Path, default_name) -> str:
     if not txt_file_path.exists():
         txt_file_path.touch()
-        prompt = f'Please enter {"a title" if txt_file_path.name == "title.txt" else "an author"} to the pack: '
-        txt_file_path.write_text(prompt if prompt else default_name)
+        prompt = input(f'Please enter the {txt_file_path.stem} name for the pack: ')
+        txt_file_path.write_text(prompt or default_name)
     txt_value = txt_file_path.read_text(encoding='utf8')
     print(f'{txt_file_path} is being used with value of "{txt_value}"')
     return txt_value
