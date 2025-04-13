@@ -102,3 +102,4 @@ def make_sticker_pack():
 if __name__ == '__main__':
     make_sticker_pack()
 
+
