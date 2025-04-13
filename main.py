@@ -5,7 +5,7 @@ from zipfile import ZipFile
 from datetime import datetime
 from shutil import copy, rmtree
 
-TRAY_SIZE = 96  # and need to be called tray.png
+TRAY_SIZE = 96
 STICKER_SIZE = 512
 TRAY_IMAGE_FORMAT = 'png'
 STICKER_IMAGE_FORMAT = 'webp'
@@ -39,7 +39,8 @@ def handle_txt_file(txt_file_path: Path, default_name) -> str:
 
 
 def verify_title_and_author() -> str:
-    title = handle_txt_file(INPUT_DIR / 'title.txt', f'nezorf{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
+    title = handle_txt_file(INPUT_DIR / 'title.txt', f'nezorf`s script '
+                                                     f'{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
     handle_txt_file(INPUT_DIR / 'author.txt', 'nezorf')
     return title
 
@@ -102,4 +103,3 @@ def make_sticker_pack():
 
 if __name__ == '__main__':
     make_sticker_pack()
-    # make_above_minimum_all_directory('input_dir')
