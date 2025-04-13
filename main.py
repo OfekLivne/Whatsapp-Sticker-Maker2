@@ -91,7 +91,7 @@ def zip_and_format_pack(pack_name: str = None):
 
 
 def make_sticker_pack():
-    Path.mkdir(INPUT_DIR, exist_ok=True)
+    Path.mkdir(INPUT_DIR, exist_ok=True)  # TODO the input file should not be created at the start of the script, we will not have images
     Path.mkdir(TEMP_OUTPUT_DIR, exist_ok=True)
     pack_title = verify_title_and_author()
     tray_path = check_for_tray_image()
