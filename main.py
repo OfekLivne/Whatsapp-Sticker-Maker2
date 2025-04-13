@@ -1,10 +1,9 @@
-from os import rmdir
-from typing import Optional
-
 from PIL import Image
 from pathlib import Path
+from typing import Optional
 from zipfile import ZipFile
 from datetime import datetime
+from shutil import copy, rmtree
 
 TRAY_SIZE = 96  # and need to be called tray.png
 STICKER_SIZE = 512
@@ -27,12 +26,15 @@ def is_image(file_path):
 
 
 def handle_txt_file(txt_file_path: Path, default_name) -> str:
-    if not txt_file_path.exists():
-        txt_file_path.touch()
-        prompt = input(f'Please enter the {txt_file_path.stem} name for the pack: ')
-        txt_file_path.write_text(prompt or default_name)
-    txt_value = txt_file_path.read_text(encoding='utf8')
-    print(f'{txt_file_path} is being used with value of "{txt_value}"')
+    output_txt_file_path = TEMP_OUTPUT_DIR / txt_file_path.name
+    if txt_file_path.exists():
+        copy(txt_file_path, output_txt_file_path)
+    else:
+        output_txt_file_path.touch()
+        prompt = input(f'Please enter the {output_txt_file_path.stem} name for the pack: ')
+        output_txt_file_path.write_text(prompt or default_name)
+    txt_value = output_txt_file_path.read_text(encoding='utf8')
+    print(f'{output_txt_file_path} is being used with value of "{txt_value}"')
     return txt_value
 
 
@@ -87,8 +89,7 @@ def zip_and_format_pack(pack_name: str = None):
     wastickers_file_type = zip_file_path.with_suffix('.wastickers')
     zip_file_path.rename(wastickers_file_type)
     print('Done! your sticker pack is at', zip_file_path)
-
-    # rmdir(OUTPUT_DIR) # TODO delete output dir, we only need the pack
+    rmtree(TEMP_OUTPUT_DIR)
 
 
 def make_sticker_pack():
