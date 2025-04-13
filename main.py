@@ -46,13 +46,10 @@ def verify_title_and_author() -> str:
 
 
 def check_for_tray_image() -> Optional[Path]:
-    Path.mkdir(TEMP_OUTPUT_DIR, exist_ok=True)
     result = tray_image_path = next(INPUT_DIR.rglob('tray.*'), None)
     if tray_image_path is None or not is_image(tray_image_path):
         print(f'tray image not found, using an image from the pack')
-        for item in INPUT_DIR.iterdir():
-            if is_image(item):
-                tray_image_path = item
+        tray_image_path = next((item for item in INPUT_DIR.iterdir() if is_image(item)), None)
 
     new_name = TEMP_OUTPUT_DIR / f'tray.{TRAY_IMAGE_FORMAT}'
     resize_image(tray_image_path, new_name, TRAY_SIZE, TRAY_SIZE, TRAY_IMAGE_FORMAT)
@@ -95,6 +92,7 @@ def zip_and_format_pack(pack_name: str = None):
 
 def make_sticker_pack():
     Path.mkdir(INPUT_DIR, exist_ok=True)
+    Path.mkdir(TEMP_OUTPUT_DIR, exist_ok=True)
     pack_title = verify_title_and_author()
     tray_path = check_for_tray_image()
     reformat_stickers(tray_path)
